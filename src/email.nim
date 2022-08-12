@@ -2,7 +2,7 @@ import asyncdispatch, smtp, strutils, times, cgi, tables, logging
 
 from jester import Request, makeUri
 
-import utils, auth
+import utils, auth2
 
 type
   Mailer* = ref object

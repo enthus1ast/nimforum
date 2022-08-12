@@ -9,7 +9,7 @@
 
 import strutils, db_sqlite, os, times, json, options, terminal
 
-import auth, frontend/user
+import auth2, frontend/user
 
 proc backup(path: string, contents: Option[string]=none[string]()) =
   if existsFile(path):
@@ -25,8 +25,9 @@ proc backup(path: string, contents: Option[string]=none[string]()) =
 proc createUser(db: DbConn, user: tuple[username, password, email: string],
                 rank: Rank) =
   assert user.username.len != 0
-  let salt = makeSalt()
-  let password = makePassword(user.password, salt)
+  # let salt = makeSalt()
+  let salt = ""
+  let password = makePassword(user.password)
 
   exec(db, sql"""
     INSERT INTO person(name, password, email, salt, status, lastOnline)

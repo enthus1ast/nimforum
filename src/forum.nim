@@ -14,7 +14,7 @@ import
 import cgi except setCookie
 import options
 
-import auth, email, utils, buildcss
+import auth2, email, utils, buildcss
 
 import frontend/threadlist except User
 import frontend/[
@@ -23,8 +23,8 @@ import frontend/[
 
 from htmlgen import tr, th, td, span, input
 
-when not declared(roSandboxDisabled):
-  {.error: "Your Nim version is vulnerable to a CVE. Upgrade it.".}
+# when not declared(roSandboxDisabled):
+#   {.error: "Your Nim version is vulnerable to a CVE. Upgrade it.".}
 
 type
   TCrud = enum crCreate, crRead, crUpdate, crDelete
@@ -612,7 +612,9 @@ proc executeLogin(c: TForumData, username, password: string): string =
     raise newForumError("Username cannot be empty", @["username"])
 
   for row in fastRows(db, query, username, username):
-    if row[2] == makePassword(password, row[4], row[2]):
+    # if row[2] == makePassword(password, row[4], row[2]):
+    if checkPassword(row[2], password):
+      ## TODO check here if password must be rehashed!
       let key = makeSessionKey()
       exec(
         db,
@@ -658,8 +660,10 @@ proc executeRegister(c: TForumData, name, pass, antibot, userIp,
   await validateCaptcha(antibot, userIp)
 
   # perform registration:
-  var salt = makeSalt()
-  let password = makePassword(pass, salt)
+  # var salt = makeSalt()
+  # let password = makePassword(pass, salt)
+  let salt = ""
+  let password = makePassword(pass)
 
   # Send activation email.
   await sendSecureEmail(
@@ -1505,8 +1509,9 @@ routes:
     let epoch = getInt64(@"epoch", -1)
     try:
       verifyIdentHash(c, @"nick", epoch, @"ident")
-      var salt = makeSalt()
-      let password = makePassword(@"newPassword", salt)
+      # var salt = makeSalt()
+      var salt = ""
+      let password = makePassword(@"newPassword")
 
       exec(
         db,
