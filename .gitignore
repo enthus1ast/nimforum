@@ -2,6 +2,7 @@
 *.swp
 nimcache/
 *.db*
+public/sitemap*.xml
 
 # Specific paths
 /createdb

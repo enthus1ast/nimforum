@@ -14,7 +14,7 @@ import
 import cgi except setCookie
 import options
 
-import auth2, email, utils, buildcss
+import auth2, email, utils, buildcss, sitemap
 
 import frontend/threadlist except User
 import frontend/[
@@ -45,6 +45,7 @@ var
   config: Config
   captcha: ReCaptcha
   mailer: Mailer
+  sitemapGenerator: SitemapGenerator
   karaxHtml: string
 
 proc init(c: TForumData) =
@@ -246,6 +247,14 @@ proc verifyIdentHash(
   if newIdent != ident:
     raise newForumError("Invalid ident hash")
 
+proc periodicallyCreateSitemap() {.async.} =
+  while true:
+    info "Regenerate sitemap"
+    sitemapGenerator.generate()
+    await sleepAsync(1000 * 60 * 24)
+    # await sleepAsync(1000 * 60 )
+
+
 proc initialise() =
   randomize()
 
@@ -263,6 +272,9 @@ proc initialise() =
   isFTSAvailable = db.getAllRows(sql("SELECT name FROM sqlite_master WHERE " &
       "type='table' AND name='post_fts'")).len == 1
 
+  sitemapGenerator = newSitemapGenerator(db)
+  sitemapGenerator.generate()
+  asyncCheck periodicallyCreateSitemap()
   buildCSS(config)
 
   # Read karax.html and set its properties.
@@ -817,7 +829,6 @@ initialise()
 
 settings:
   port = config.port.Port
-
 routes:
 
   get "/categories.json":

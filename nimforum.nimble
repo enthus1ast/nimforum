@@ -24,6 +24,7 @@ requires "sass#649e0701fa5c"
 requires "karax#5f21dcd"
 
 requires "webdriver#429933a"
+requires "simpleSitemap"
 
 # Tasks
 
